@@ -1,0 +1,51 @@
+--Stud_Marks
+CREATE TABLE Stud_Marks (
+    Rollno NUMBER PRIMARY KEY,
+    Name VARCHAR2(100),
+    Total_Marks NUMBER
+);
+
+--Result
+CREATE TABLE Result (
+    Roll NUMBER PRIMARY KEY,
+    Name VARCHAR2(100),
+    Class VARCHAR2(50)
+);
+
+
+--trigger
+DELIMITER $$
+
+CREATE TRIGGER categorize_students
+AFTER INSERT ON Stud_Marks
+FOR EACH ROW
+BEGIN
+    DECLARE student_class VARCHAR(50);
+
+    -- Categorize the student based on marks
+    IF NEW.Total_Marks >= 990 AND NEW.Total_Marks <= 1500 THEN
+        SET student_class = 'Distinction';
+    ELSEIF NEW.Total_Marks >= 900 AND NEW.Total_Marks <= 989 THEN
+        SET student_class = 'First Class';
+    ELSEIF NEW.Total_Marks >= 825 AND NEW.Total_Marks <= 899 THEN
+        SET student_class = 'Higher Second Class';
+    ELSE
+        SET student_class = 'Not Categorized';
+    END IF;
+
+    -- Insert the categorized result into the Result table
+    INSERT INTO Result (Roll, Name, Class)
+    VALUES (NEW.Rollno, NEW.Name, student_class);
+END$$
+
+DELIMITER ;
+
+--Insert Dummy data
+INSERT INTO Stud_Marks VALUES (1, 'Alice', 1450);
+INSERT INTO Stud_Marks VALUES (2, 'Bob', 950);
+INSERT INTO Stud_Marks VALUES (3, 'Charlie', 870);
+INSERT INTO Stud_Marks VALUES (4, 'David', 820);
+INSERT INTO Stud_Marks VALUES (5, 'Eve', 1100);
+
+--Print output
+select * from Result;
