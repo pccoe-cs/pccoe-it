@@ -1,25 +1,27 @@
--- Create the Customer table
+DROP DATABASE NEWBIE;
+CREATE DATABASE NEWBIE;
+USE NEWBIE;
 CREATE TABLE Customer (
-    Cid NUMBER PRIMARY KEY,
-    CustName VARCHAR2(100),
-    City VARCHAR2(100)
+                          Cid INT PRIMARY KEY,
+                          CustName VARCHAR(100),
+                          City VARCHAR(100)
 );
 
 -- Create the Product table
 CREATE TABLE Product (
-    Pid NUMBER PRIMARY KEY,
-    ProductName VARCHAR2(100),
-    Qty NUMBER
+                         Pid INT PRIMARY KEY,
+                         ProductName VARCHAR(100),
+                         Qty INT
 );
 
--- Create the Order table
-CREATE TABLE Order (
-    Oid NUMBER PRIMARY KEY,
-    Cid NUMBER,
-    Pid NUMBER,
-    Qty NUMBER,
-    FOREIGN KEY (Cid) REFERENCES Customer(Cid),
-    FOREIGN KEY (Pid) REFERENCES Product(Pid)
+-- Create the Orders table
+CREATE TABLE Orders (
+                        Oid INT PRIMARY KEY,
+                        Cid INT,
+                        Pid INT,
+                        Qty INT,
+                        FOREIGN KEY (Cid) REFERENCES Customer(Cid),
+                        FOREIGN KEY (Pid) REFERENCES Product(Pid)
 );
 
 -- Insert sample data into Customer table
@@ -39,37 +41,33 @@ VALUES (102, 'Smartphone', 100);
 INSERT INTO Product (Pid, ProductName, Qty)
 VALUES (103, 'Headphones', 200);
 
--- Insert sample data into Order table
--- Note: Orders will be placed when inserting into the Order table
-INSERT INTO Order (Oid, Cid, Pid, Qty)
+-- Insert sample data into Orders table
+INSERT INTO Orders (Oid, Cid, Pid, Qty)
 VALUES (1, 1, 101, 1);  -- John Doe orders 1 Laptop
 
-INSERT INTO Order (Oid, Cid, Pid, Qty)
+INSERT INTO Orders (Oid, Cid, Pid, Qty)
 VALUES (2, 2, 102, 2);  -- Jane Smith orders 2 Smartphones
-
 
 -- Create the trigger to update product quantity after an order is placed
 DELIMITER $$
 
 CREATE TRIGGER update_product_qty
-AFTER INSERT ON Order
-FOR EACH ROW
+    AFTER INSERT ON Orders
+    FOR EACH ROW
 BEGIN
-    -- Update the quantity of the product in the Product table after an order is placed
     UPDATE Product
-    SET Qty = Qty - :NEW.Qty
-    WHERE Pid = :NEW.Pid;
+    SET Qty = Qty - NEW.Qty
+    WHERE Pid = NEW.Pid;
 END$$
 
 DELIMITER ;
 
--- Insert a new order (John Doe orders 1 Laptop)
-INSERT INTO Order (Oid, Cid, Pid, Qty)
-VALUES (3, 1, 101, 1);
+-- Insert additional orders
+INSERT INTO Orders (Oid, Cid, Pid, Qty)
+VALUES (3, 1, 101, 1);  -- John Doe orders 1 Laptop
 
--- Insert another new order (Jane Smith orders 3 Headphones)
-INSERT INTO Order (Oid, Cid, Pid, Qty)
-VALUES (4, 2, 103, 3);
+INSERT INTO Orders (Oid, Cid, Pid, Qty)
+VALUES (4, 2, 103, 3);  -- Jane Smith orders 3 Headphones
 
--- Check the updated product quantities
+-- Verify updated product quantities
 SELECT * FROM Product;
