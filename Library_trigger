@@ -1,55 +1,58 @@
 -- Create the Library table
+drop database  NEWBIE;
+create database  NEWBIE;
+use NEWBIE;
 CREATE TABLE Library (
-    book_id NUMBER PRIMARY KEY,
-    title VARCHAR2(100),
-    author VARCHAR2(100),
-    published_date DATE,
-    quantity NUMBER
+                         book_id INT PRIMARY KEY,
+                         title VARCHAR(100),
+                         author VARCHAR(100),
+                         published_date DATE,
+                         quantity INT
 );
 
 -- Create the Library_Audit table to store old values for updated or deleted records
 CREATE TABLE Library_Audit (
-    audit_id NUMBER PRIMARY KEY,
-    book_id NUMBER,
-    title VARCHAR2(100),
-    author VARCHAR2(100),
-    published_date DATE,
-    quantity NUMBER,
-    action VARCHAR2(10), -- Action will store 'UPDATE' or 'DELETE'
-    action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                               audit_id INT AUTO_INCREMENT PRIMARY KEY,
+                               book_id INT,
+                               title VARCHAR(100),
+                               author VARCHAR(100),
+                               published_date DATE,
+                               quantity INT,
+                               action VARCHAR(10), -- Action will store 'UPDATE' or 'DELETE'
+                               action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- Create the trigger to track updates and deletes in the Library table
+-- Trigger for DELETE
 DELIMITER $$
 
-CREATE TRIGGER track_library_changes
-AFTER DELETE OR UPDATE ON Library
-FOR EACH ROW
+CREATE TRIGGER track_library_deletes
+    AFTER DELETE ON Library
+    FOR EACH ROW
 BEGIN
-    -- When a record is deleted, capture the old value and action
-    IF DELETING THEN
-        INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
-        VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'DELETE');
-    
-    -- When a record is updated, capture the old value and action
-    ELSIF UPDATING THEN
-        INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
-        VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'UPDATE');
-    END IF;
+    INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
+    VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'DELETE');
+END$$
+
+-- Trigger for UPDATE
+CREATE TRIGGER track_library_updates
+    AFTER UPDATE ON Library
+    FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
+    VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'UPDATE');
 END$$
 
 DELIMITER ;
 
 -- Insert sample data into the Library table
 INSERT INTO Library (book_id, title, author, published_date, quantity)
-VALUES (1, 'Introduction to SQL', 'John Doe', TO_DATE('2020-05-15', 'YYYY-MM-DD'), 10);
+VALUES (1, 'Introduction to SQL', 'John Doe', '2020-05-15', 10);
 
 INSERT INTO Library (book_id, title, author, published_date, quantity)
-VALUES (2, 'Advanced Database Systems', 'Jane Smith', TO_DATE('2018-03-10', 'YYYY-MM-DD'), 5);
+VALUES (2, 'Advanced Database Systems', 'Jane Smith', '2018-03-10', 5);
 
 INSERT INTO Library (book_id, title, author, published_date, quantity)
-VALUES (3, 'Learning Python', 'Mark Taylor', TO_DATE('2021-08-25', 'YYYY-MM-DD'), 7);
+VALUES (3, 'Learning Python', 'Mark Taylor', '2021-08-25', 7);
 
 -- Update the quantity of a book in the Library table
 UPDATE Library
