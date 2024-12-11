@@ -1,0 +1,64 @@
+-- Create the Library table
+CREATE TABLE Library (
+    book_id NUMBER PRIMARY KEY,
+    title VARCHAR2(100),
+    author VARCHAR2(100),
+    published_date DATE,
+    quantity NUMBER
+);
+
+-- Create the Library_Audit table to store old values for updated or deleted records
+CREATE TABLE Library_Audit (
+    audit_id NUMBER PRIMARY KEY,
+    book_id NUMBER,
+    title VARCHAR2(100),
+    author VARCHAR2(100),
+    published_date DATE,
+    quantity NUMBER,
+    action VARCHAR2(10), -- Action will store 'UPDATE' or 'DELETE'
+    action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Create the trigger to track updates and deletes in the Library table
+DELIMITER $$
+
+CREATE TRIGGER track_library_changes
+AFTER DELETE OR UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    -- When a record is deleted, capture the old value and action
+    IF DELETING THEN
+        INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
+        VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'DELETE');
+    
+    -- When a record is updated, capture the old value and action
+    ELSIF UPDATING THEN
+        INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
+        VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'UPDATE');
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Insert sample data into the Library table
+INSERT INTO Library (book_id, title, author, published_date, quantity)
+VALUES (1, 'Introduction to SQL', 'John Doe', TO_DATE('2020-05-15', 'YYYY-MM-DD'), 10);
+
+INSERT INTO Library (book_id, title, author, published_date, quantity)
+VALUES (2, 'Advanced Database Systems', 'Jane Smith', TO_DATE('2018-03-10', 'YYYY-MM-DD'), 5);
+
+INSERT INTO Library (book_id, title, author, published_date, quantity)
+VALUES (3, 'Learning Python', 'Mark Taylor', TO_DATE('2021-08-25', 'YYYY-MM-DD'), 7);
+
+-- Update the quantity of a book in the Library table
+UPDATE Library
+SET quantity = 8
+WHERE book_id = 2;
+
+-- Delete a book from the Library table
+DELETE FROM Library
+WHERE book_id = 1;
+
+-- Select all records from the Library_Audit table to view the logged actions
+SELECT * FROM Library_Audit;
