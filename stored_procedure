@@ -1,15 +1,15 @@
 --Stud_Marks
 CREATE TABLE Stud_Marks (
-    Rollno NUMBER PRIMARY KEY,
-    Name VARCHAR2(100),
-    Total_Marks NUMBER
+    Rollno INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Total_Marks INT
 );
 
 --Result
 CREATE TABLE Result (
-    Roll NUMBER PRIMARY KEY,
-    Name VARCHAR2(100),
-    Class VARCHAR2(50)
+    Roll INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Class VARCHAR(50)
 );
 
 
