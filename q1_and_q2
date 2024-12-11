@@ -25,6 +25,7 @@ CREATE TABLE project (
 CREATE TABLE assignment (
     projectid INT,
     eid INT,
+    PRIMARY KEY(projectid,eid),
     FOREIGN KEY (projectid) REFERENCES project(projectid),
     FOREIGN KEY (eid) REFERENCES employee(eid)
 );
