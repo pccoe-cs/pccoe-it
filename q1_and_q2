@@ -25,7 +25,6 @@ CREATE TABLE project (
 CREATE TABLE assignment (
     projectid INT,
     eid INT,
-    PRIMARY KEY(projectid,eid),
     FOREIGN KEY (projectid) REFERENCES project(projectid),
     FOREIGN KEY (eid) REFERENCES employee(eid)
 );
@@ -56,22 +55,18 @@ VALUES
 (101, 2),  -- Priya works on Bank Management
 (102, 1);  -- Ravi works on E-Commerce
 
---Alter table to add address in employee table.
 ALTER TABLE employee
 ADD COLUMN address VARCHAR(255);
 
---Display employee name and projects on which they are working.
 SELECT e.ename, p.project_name
 FROM employee e
 JOIN assignment a ON e.eid = a.eid
 JOIN project p ON a.projectid = p.projectid;
 
---Display projectid, projectname, and their managers.
 SELECT p.projectid, p.project_name, m.ename AS manager_name
 FROM project p
 JOIN manager m ON p.manager = m.eid;
 
---Create view of employees working on 'Bank Management' project.
 CREATE VIEW bank_management_employees AS
 SELECT e.ename, p.project_name
 FROM employee e
@@ -79,49 +74,9 @@ JOIN assignment a ON e.eid = a.eid
 JOIN project p ON a.projectid = p.projectid
 WHERE p.project_name = 'Bank Management';
 
--- Print names of employees whose salary is greater than 40000.
 SELECT ename 
 FROM employee 
 WHERE salary > 40000;
 
---Update salary of each employee with an increase of Rs.2000.
 UPDATE employee 
 SET salary = salary + 2000;
-
---modify eid to use auto_increment
-ALTER TABLE employee
-MODIFY COLUMN eid INT AUTO_INCREMENT;
-
--- Display Employees working in both projects 'Bank Management' and 'Content Management'
-SELECT e.ename
-FROM employee e
-JOIN assignment a ON e.eid = a.eid
-JOIN project p ON a.projectid = p.projectid
-WHERE p.project_name IN ('Bank Management', 'Content Management')
-GROUP BY e.eid
-HAVING COUNT(DISTINCT p.project_name) = 2;
-
-
---Display the average salary of the organization
-SELECT AVG(salary) AS average_salary
-FROM employee;
-
---Display employees who do not work on the 'Bank Management' project
-SELECT e.ename
-FROM employee e
-LEFT JOIN assignment a ON e.eid = a.eid
-LEFT JOIN project p ON a.projectid = p.projectid
-WHERE p.project_name != 'Bank Management' OR p.project_name IS NULL;
-
-
---Delete employee whose id is 5
-DELETE FROM employee
-WHERE eid = 5;
-
-
---Display employee having the highest salary in the organization
-SELECT ename, salary
-FROM employee
-ORDER BY salary DESC
-LIMIT 1;
-
