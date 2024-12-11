@@ -1,0 +1,91 @@
+-- Create employee table
+CREATE TABLE employee (
+    eid INT PRIMARY KEY,
+    ename VARCHAR(100),
+    salary DECIMAL(10, 2),
+    address VARCHAR(255)
+);
+
+-- Create manager table
+CREATE TABLE manager (
+    eid INT PRIMARY KEY,
+    ename VARCHAR(100),
+    FOREIGN KEY (eid) REFERENCES employee(eid)
+);
+
+-- Create project table
+CREATE TABLE project (
+    projectid INT PRIMARY KEY,
+    project_name VARCHAR(100),
+    manager INT,
+    FOREIGN KEY (manager) REFERENCES manager(eid)
+);
+
+-- Create assignment table
+CREATE TABLE assignment (
+    projectid INT,
+    eid INT,
+    PRIMARY KEY(projectid,eid)
+    FOREIGN KEY (projectid) REFERENCES project(projectid),
+    FOREIGN KEY (eid) REFERENCES employee(eid)
+);
+
+-- Insert sample data into employee table
+INSERT INTO employee (eid, ename, salary, address) 
+VALUES 
+(1, 'Ravi Sharma', 35000, 'Bangalore'),
+(2, 'Priya Singh', 45000, 'Mumbai'),
+(3, 'Suresh Kumar', 55000, 'Delhi'),
+(4, 'Neha Desai', 30000, 'Chennai');
+
+-- Insert sample data into manager table
+INSERT INTO manager (eid, ename) 
+VALUES 
+(3, 'Suresh Kumar');  -- Suresh is the manager
+
+-- Insert sample data into project table
+INSERT INTO project (projectid, project_name, manager) 
+VALUES 
+(101, 'Bank Management', 3),  -- Suresh is the manager of Bank Management project
+(102, 'E-Commerce', 3);  -- Suresh is the manager of E-Commerce project
+
+-- Insert sample data into assignment table
+INSERT INTO assignment (projectid, eid) 
+VALUES 
+(101, 1),  -- Ravi works on Bank Management
+(101, 2),  -- Priya works on Bank Management
+(102, 1);  -- Ravi works on E-Commerce
+
+
+ALTER TABLE employee
+MODIFY COLUMN eid INT AUTO_INCREMENT;
+
+SELECT e.ename
+FROM employee e
+JOIN assignment a ON e.eid = a.eid
+JOIN project p ON a.projectid = p.projectid
+WHERE p.project_name IN ('Bank Management', 'Content Management')
+GROUP BY e.eid
+HAVING COUNT(DISTINCT p.project_name) = 2;
+
+SELECT AVG(salary) AS average_salary
+FROM employee;
+
+SELECT e.ename
+FROM employee e
+LEFT JOIN assignment a ON e.eid = a.eid
+LEFT JOIN project p ON a.projectid = p.projectid
+WHERE p.project_name != 'Bank Management' OR p.project_name IS NULL;
+
+DELETE FROM employee
+WHERE eid = 5;
+
+SELECT ename, salary
+FROM employee
+ORDER BY salary DESC
+LIMIT 1;
+
+
+
+
+
