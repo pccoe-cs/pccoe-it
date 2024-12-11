@@ -1,0 +1,58 @@
+--Assuming the Customer Table Structure
+CREATE TABLE Customer (
+    Cid INT PRIMARY KEY,
+    CustName VARCHAR(100),
+    City VARCHAR(100)
+);
+
+-- Procedure to List Customer Names Using a Cursor
+DELIMITER $$
+
+CREATE PROCEDURE list_customer_names()
+BEGIN
+    -- Declare variables
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_cust_name VARCHAR(100);
+
+    -- Declare the cursor to fetch customer names from the Customer table
+    DECLARE customer_cursor CURSOR FOR 
+        SELECT CustName
+        FROM Customer;
+
+    -- Declare CONTINUE HANDLER for when the cursor finishes processing all rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Open the cursor
+    OPEN customer_cursor;
+
+    -- Loop through each record from the cursor
+    read_loop: LOOP
+        FETCH customer_cursor INTO v_cust_name;
+
+        -- Exit the loop if no more records to fetch
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Print the customer name (in a real application, you could store these in a list or process them further)
+        SELECT v_cust_name AS Customer_Name;
+
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE customer_cursor;
+END$$
+
+CALL list_customer_names();
+
+-- Insert sample data into the Customer table
+INSERT INTO Customer (Cid, CustName, City) 
+VALUES 
+(1, 'Alice', 'New York'),
+(2, 'Bob', 'Los Angeles'),
+(3, 'Charlie', 'Chicago');
+
+
+
+DELIMITER ;
+
