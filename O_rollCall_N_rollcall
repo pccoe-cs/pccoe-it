@@ -1,0 +1,75 @@
+-- Create the N_RollCall table (new roll call)
+CREATE TABLE N_RollCall (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(100),
+    attendance_date DATE
+);
+
+-- Create the O_RollCall table (old roll call)
+CREATE TABLE O_RollCall (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(100),
+    attendance_date DATE
+);
+
+--Procedure with Cursor to Merge Data
+DELIMITER $$
+
+CREATE PROCEDURE merge_rollcall_data()
+BEGIN
+    -- Declare a cursor to select all rows from N_RollCall
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_student_id INT;
+    DECLARE v_student_name VARCHAR(100);
+    DECLARE v_attendance_date DATE;
+
+    -- Declare the cursor
+    DECLARE rollcall_cursor CURSOR FOR 
+        SELECT student_id, student_name, attendance_date
+        FROM N_RollCall;
+    
+    -- Declare CONTINUE HANDLER for when the cursor finishes processing all rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Open the cursor
+    OPEN rollcall_cursor;
+
+    -- Loop through each record from the cursor
+    read_loop: LOOP
+        FETCH rollcall_cursor INTO v_student_id, v_student_name, v_attendance_date;
+        
+        -- Exit the loop if no more records to fetch
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Check if the record already exists in O_RollCall
+        IF NOT EXISTS (SELECT 1 FROM O_RollCall WHERE student_id = v_student_id AND attendance_date = v_attendance_date) THEN
+            -- Insert the data into O_RollCall if it does not exist
+            INSERT INTO O_RollCall (student_id, student_name, attendance_date)
+            VALUES (v_student_id, v_student_name, v_attendance_date);
+        END IF;
+
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE rollcall_cursor;
+END$$
+
+DELIMITER ;
+
+CALL merge_rollcall_data();
+
+-- Insert some sample data into N_RollCall
+INSERT INTO N_RollCall (student_id, student_name, attendance_date) 
+VALUES 
+(1, 'Alice', '2024-12-01'),
+(2, 'Bob', '2024-12-01'),
+(3, 'Charlie', '2024-12-01');
+
+-- Insert some sample data into O_RollCall (old roll call)
+INSERT INTO O_RollCall (student_id, student_name, attendance_date)
+VALUES 
+(1, 'Alice', '2024-12-01');
+
+SELECT * FROM O_RollCall;
